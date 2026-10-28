@@ -1,0 +1,29 @@
+name: Orchestration (free, manual trigger)
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "What to run"
+        required: false
+        default: "demo"
+  # schedule:  # uncomment only if you want recurring runs (counts against free minutes on private repos)
+  #   - cron: "0 14 * * 1"
+permissions:
+  contents: read
+jobs:
+  run:
+    runs-on: ubuntu-latest  # standard runner: free/unlimited on public repos, 2,000 min/mo included on private
+    timeout-minutes: 30     # well under the 6h job limit; keeps free minutes safe
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pandas
+      - name: Demo - prove compute ran on GitHub, not locally
+        run: |
+          echo "Runner: $(uname -a) | CPUs: $(nproc) | Task input: ${{ inputs.task }}"
+          python3 -c "import pandas; print('pandas', pandas.__version__)"
+      # Add your real step here, e.g.:
+      # - run: python3 tools/csv_analysis.py data/input.csv > results.json
+      # - uses: actions/upload-artifact@v4
+      #   with: { name: results, path: results.json }

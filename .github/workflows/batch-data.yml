@@ -1,0 +1,19 @@
+name: Batch data analysis (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      csv_path: { description: "CSV in this repo to analyze", required: true, default: "data/iris.csv" }
+      group_col: { description: "Optional group-by column", required: false, default: "species" }
+permissions: { contents: read }
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pandas
+      - run: python3 tools/csv_analysis.py "${{ inputs.csv_path }}" "${{ inputs.group_col }}" > analysis.json && cat analysis.json
+      - uses: actions/upload-artifact@v4
+        with: { name: analysis, path: analysis.json }

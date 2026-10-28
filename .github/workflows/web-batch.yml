@@ -1,0 +1,19 @@
+name: Web batch - verify + monitor URLs (manual)
+on:
+  workflow_dispatch: {}
+  # schedule: { cron: "0 13 * * *" }  # uncomment to run daily - uses ~1-2 min/day of included minutes
+permissions: { contents: read }
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: |
+          python3 tools/verify_sources.py urls.txt > verify.json || echo "add urls.txt (one URL per line) to use this"
+          cat verify.json 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: web-batch, path: verify.json }
